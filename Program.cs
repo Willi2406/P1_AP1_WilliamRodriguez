@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using P1_AP1_WilliamRodriguez.Components;
 using P1_AP1_WilliamRodriguez.DAL;
+using P1_AP1_WilliamRodriguez.Services;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,6 +13,8 @@ builder.Services.AddRazorComponents()
 var ConStr = builder.Configuration.GetConnectionString("SqlConStr");
 
 builder.Services.AddDbContextFactory<Contexto>(o => o.UseSqlite(ConStr));
+
+builder.Services.AddScoped<RegistroServices>();
 
 var app = builder.Build();
 
