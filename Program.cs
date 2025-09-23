@@ -1,4 +1,6 @@
+using Microsoft.EntityFrameworkCore;
 using P1_AP1_WilliamRodriguez.Components;
+using P1_AP1_WilliamRodriguez.DAL;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -7,6 +9,8 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
 var ConStr = builder.Configuration.GetConnectionString("SqlConStr");
+
+builder.Services.AddDbContextFactory<Contexto>(o => o.UseSqlite(ConStr));
 
 var app = builder.Build();
 
