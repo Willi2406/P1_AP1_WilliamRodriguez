@@ -2,8 +2,9 @@
 
 namespace P1_AP1_WilliamRodriguez.Models;
 
-public class Registro
+public class EntradasHuacales
 {
     [Key]
-    public int registroId {  get; set; }
+    public int EntradaId {  get; set; }
+    
 }
