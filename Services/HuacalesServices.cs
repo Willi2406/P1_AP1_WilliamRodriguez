@@ -30,9 +30,10 @@ public class HuacalesServices (IDbContextFactory<Contexto> DbFactory)
     public async Task<bool> Eliminar(int EntradaId)
     {
         await using var contexto = await DbFactory.CreateDbContextAsync();
-        var Entidad = await contexto.Huacales.FindAsync(EntradaId);
-        if (Entidad == null) return false;
-        contexto.Remove(EntradaId);
+        var entidad = await contexto.Huacales.FindAsync(EntradaId);
+        if (entidad is null) return false;
+
+        contexto.Huacales.Remove(entidad); 
         return await contexto.SaveChangesAsync() > 0;
     }
 

@@ -3,104 +3,97 @@
 @inject NavigationManager Navigation
 @rendermode InteractiveServer
 
-<PageTitle>Creacion de huacales</PageTitle>
+<PageTitle>Edicion de huacales</PageTitle>
 
-<EditForm Model="EntradaId" OnvalidSubmit="Modificar">
-	<DataAnnotationsValidator />
-	<ValidationSummary />
+<EditForm Model="huacales" OnValidSubmit="Modificar">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
 
-	<div class="container">
-		<div class="card shadow-lg">
-			<div class="card-header">
-				<h5 class="card-title">Crear Huacales</h5>
-			</div>
+    <div class="container">
+        <div class="card shadow-lg">
+            <div class="card-header">
+                <h5 class="card-title m-0">Modificar Huacales</h5>
+            </div>
 
-			<div class="card-body">
-				<div class="mb-3">
-					<label class="form-label"><strong>Nombre del Cliente</strong></label>
-					<InputText class="form-select" @bind-Value="huacales.NombreCliente" />
-				</div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label"><strong>EntradaId</strong></label>
+                    <InputNumber class="form-control" @bind-Value="huacales.EntradaId" disabled />
+                </div>
 
-				<div class="mb-3">
-					<label class="form-label"><strong>Cantidad</strong></label>
-					<InputNumber class="form-select" @bind-Value="huacales.Cantidad" />
-				</div>
+                <div class="mb-3">
+                    <label class="form-label"><strong>Nombre del Cliente</strong></label>
+                    <InputText class="form-control" @bind-Value="huacales.NombreCliente" />
+                    <ValidationMessage For="() => huacales.NombreCliente" />
+                </div>
 
-				<div class="mb-3">
-					<label class="form-label"><strong>Precio</strong></label>
-					<InputNumber class="form-select" @bind-Value="huacales.Precio" />
-				</div>
+                <div class="mb-3">
+                    <label class="form-label"><strong>Cantidad</strong></label>
+                    <InputNumber class="form-control" @bind-Value="huacales.Cantidad" />
+                    <ValidationMessage For="() => huacales.Cantidad" />
+                </div>
 
+                <div class="mb-3">
+                    <label class="form-label"><strong>Precio</strong></label>
+                    <InputNumber class="form-control" @bind-Value="huacales.Precio" />
+                    <ValidationMessage For="() => huacales.Precio" />
+                </div>
 
-				<div class="row">
-					<div class="col-md-6 mb-3">
-						<label class="form-label"><strong>Fecha de salida</strong></label>
-						<input class="form-control" value="@huacales.FechaInicio.ToLocalTime().ToString("yyyy-MM-dd HH:mm")" readonly />
-					</div>
-					<div class="col-md-6 mb-3">
-						<label class="form-label"><strong>Fecha de entrega</strong></label>
-						<input class="form-control" value="@(huacales.FechaFin.HasValue? huacales.FechaFin.Value.ToLocalTime().ToString("yyyy-MM-dd HH:mm") : "-")" readonly />
-						<button type="button" class="btn btn-outline-success mt-2" @onclick="MarcarFinalizadaAhora">
-							<span class="bi bi-flag"></span> Marcar Finalizada ahora
-						</button>
-					</div>
-				</div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label"><strong>Fecha de salida</strong></label>
+                        <input class="form-control" value="@huacales.FechaInicio.ToLocalTime().ToString("yyyy-MM-dd HH:mm")" readonly />
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label"><strong>Fecha de entrega</strong></label>
+                        <input class="form-control" value="@(huacales.FechaFin.HasValue? huacales.FechaFin.Value.ToLocalTime().ToString("yyyy-MM-dd HH:mm") : "-")" readonly />
+                        <button type="button" class="btn btn-outline-success mt-2" @onclick="MarcarFinalizadaAhora">
+                            <span class="bi bi-flag"></span> Marcar Finalizada ahora
+                        </button>
+                    </div>
+                </div>
+            </div>
 
-
-				<div class="card-footer space-between">
-					<a href="/" class="btn btn-secondary">
-						<span class="bi bi-arrow-left"></span> Volver
-					</a>
-
-					<button type="button"
-							class="btn btn-outline-danger"
-							@onclick="Eliminar">
-						<span class="bi bi-trash me-1"></span> Eliminar
-					</button>
-
-					<button type="submit" class="btn btn-primary bi bi-floppy">Guardar</button>
-				</div>
-			</div>
-		</div>
-	</div>
+            <div class="card-footer d-flex gap-2">
+                <a href="/" class="btn btn-secondary">
+                    <span class="bi bi-arrow-left me-1"></span> Volver
+                </a>
+                <button type="button" class="btn btn-danger" @onclick="Eliminar">
+                    <span class="bi bi-trash me-1"></span> Eliminar
+                </button>
+                <button type="submit" class="btn btn-primary">
+                    <span class="bi bi-floppy me-1"></span> Guardar
+                </button>
+            </div>
+        </div>
+    </div>
 </EditForm>
-@code
-{
-	[Parameter]
-	public int EntradaId { get; set; }
 
-	public EntradasHuacales huacales { get; set; } = new();
+@code {
+    [Parameter] 
+    public int EntradaId { get; set; }
+    public EntradasHuacales huacales { get; set; } = new();
 
-	protected override async Task OnInitializedAsync()
-	{
-		huacales = await huacalesServices.Buscar(EntradaId);
-	}
+    protected override async Task OnParametersSetAsync()
+    {
+        huacales = await huacalesServices.Buscar(EntradaId) ?? new EntradasHuacales { EntradaId = EntradaId, FechaInicio = DateTime.UtcNow };
+    }
 
-	private async Task Eliminar()
-	{
-		var ok = await huacalesServices.Eliminar(huacales.EntradaId);
-		if (ok)
-		{
-			Navigation.NavigateTo("/");
-		}
-	}
+    private async Task Modificar()
+    {
+        var existe = (await huacalesServices.Listar(h =>
+            h.NombreCliente == huacales.NombreCliente && h.EntradaId != huacales.EntradaId)).Any();
+        if (existe) return;
+        var ok = await huacalesServices.Guardar(huacales);
+        if (ok) Navigation.NavigateTo("/");
+    }
 
-	private async Task Modificar()
-	{
-		var existe = (await huacalesServices.Listar(h => h.NombreCliente == huacales.NombreCliente && h.EntradaId != huacales.EntradaId)).Any();
-		if (existe)
-		{
-			return;
-		}
-		var ok = await huacalesServices.Guardar(huacales);
-		if (ok)
-		{
-			Navigation.NavigateTo("/");
-		}
-	}
-	private void MarcarFinalizadaAhora()
-	{
-		if (huacales is null) return;
-		huacales.FechaFin = DateTime.UtcNow;
-	}
+    private async Task Eliminar()
+    {
+        if (huacales is null || huacales.EntradaId <= 0) return;
+        var ok = await huacalesServices.Eliminar(huacales.EntradaId);
+        if (ok) Navigation.NavigateTo("/");
+    }
+    private void MarcarFinalizadaAhora() => huacales.FechaFin = DateTime.UtcNow;
 }
+
