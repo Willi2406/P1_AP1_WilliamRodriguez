@@ -26,10 +26,7 @@ namespace P1_AP1_WilliamRodriguez.Migrations
                     b.Property<int>("Cantidad")
                         .HasColumnType("INTEGER");
 
-                    b.Property<DateTime?>("FechaFin")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime>("FechaInicio")
+                    b.Property<DateTime>("Fecha")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("NombreCliente")
