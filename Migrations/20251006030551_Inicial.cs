@@ -20,7 +20,6 @@ namespace P1_AP1_WilliamRodriguez.Migrations
                     NombreCliente = table.Column<string>(type: "TEXT", nullable: false),
                     Cantidad = table.Column<int>(type: "INTEGER", nullable: false),
                     Precio = table.Column<int>(type: "INTEGER", nullable: false),
-                    Importe = table.Column<double>(type: "REAL", nullable: false),
                     Fecha = table.Column<DateTime>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>

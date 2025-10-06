@@ -15,9 +15,6 @@ public class EntradasHuacales
 
     [Range(1, int.MaxValue, ErrorMessage = "El precio debe ser mayor o igual a 1")]
     public int Precio { get; set; }
-
-    public double Importe => Cantidad * Precio;
-
     public DateTime Fecha{ get; set; } = DateTime.UtcNow;
 
 }
