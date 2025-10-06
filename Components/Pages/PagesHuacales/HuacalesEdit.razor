@@ -21,7 +21,7 @@
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label class="form-label"><strong>Fecha</strong></label>
-                        <input class="form-control" value="@huacales.Fecha.ToLocalTime().ToString("yyyy-MM-dd")" readonly />
+                        <input class="form-control" value="@huacales.Fecha.ToLocalTime().ToString("yyyy-MM-dd HH:mm")" readonly />
                     </div>
                 </div>
 
@@ -50,10 +50,10 @@
             </div>
 
             <div class="card-footer d-flex gap-2">
-                <a href="/" class="btn btn-secondary">
+                <a href="/Huacales/Index" class="btn btn-secondary">
                     <span class="bi bi-arrow-left me-1"></span> Volver
                 </a>
-                <button type="button" class="btn btn-danger" @onclick="Eliminar">
+				<button type="button" class="btn btn-danger" @onclick="Eliminar">
                     <span class="bi bi-trash me-1"></span> Eliminar
                 </button>
                 <button type="submit" class="btn btn-primary">
@@ -87,7 +87,7 @@
         var ok = await huacalesServices.Guardar(huacales);
         if (ok)
         {
-            Navigation.NavigateTo("/");
+            Navigation.NavigateTo("/Huacales/Index");
         }
         else
         {
@@ -105,7 +105,7 @@
         if (ok)
         {
             await JSRuntime.InvokeVoidAsync("alert", "Cliente Eliminado");
-            Navigation.NavigateTo("/");
+            Navigation.NavigateTo("/Huacales/Index");
         }
     }
 }

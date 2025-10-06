@@ -20,7 +20,7 @@
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label class="form-label"><strong>Fecha</strong></label>
-                        <InputDate @bind-Value="huacales.Fecha" class="form-control" DateFormat="yyyy-MM-dd" />
+                        <input class="form-control" value="@huacales.Fecha.ToLocalTime().ToString("yyyy-MM-dd")" readonly />
                     </div>
                 </div>
 
@@ -64,6 +64,6 @@
         if (existe) return;
 
         var ok = await huacalesServices.Guardar(huacales);
-        if (ok) Navigation.NavigateTo("/");
+        if (ok) Navigation.NavigateTo("/Huacales/Index");
     }
 }

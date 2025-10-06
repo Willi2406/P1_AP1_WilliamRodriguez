@@ -31,7 +31,7 @@
 					<InputSelect class="form-select" @bind-Value="Filtro">
 						<option value="" selected disabled>Elegir una opcion</option>
 						<option value="EntradaId">Id</option>
-						<option value="Clientes">NombreCliente</option>
+						<option value="Clientes">Clientes</option>
 						<option value="Cantidad">Cantidad</option>
 						<option value="Precio">Precio</option>
 					</InputSelect>
@@ -52,7 +52,7 @@
 							<tr>
 								<th>Fecha</th>
 								<th>ID</th>
-								<th>NombresCliente</th>
+								<th>Clientes</th>
 								<th>Cantidad</th>
 								<th>Precio</th>
 								<th>Importe</th>
@@ -134,7 +134,7 @@
 			}
 			return;
 		}
-		if (Filtro == "NombreCliente" && !string.IsNullOrWhiteSpace(ValorFiltro))
+		if (Filtro == "Clientes" && !string.IsNullOrWhiteSpace(ValorFiltro))
 		{
 			var v = ValorFiltro.Trim().ToLower();
 			ListaDeHuacales = await huacalesServices.Listar(h => (h.NombreCliente ?? "").ToLower().Contains(v));
@@ -147,7 +147,7 @@
 		{
 			ListaDeHuacales = await huacalesServices.Listar(p => p.Cantidad == Cantidad);
 		}
-		else if (Filtro == "Precio" && decimal.TryParse(ValorFiltro, out var Precio))
+		else if (Filtro == "Precio" && int.TryParse(ValorFiltro, out var Precio))
 		{
 			ListaDeHuacales = await huacalesServices.Listar(p => p.Precio == Precio);
 		}
