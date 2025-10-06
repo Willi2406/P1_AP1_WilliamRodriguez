@@ -11,7 +11,7 @@ using P1_AP1_WilliamRodriguez.DAL;
 namespace P1_AP1_WilliamRodriguez.Migrations
 {
     [DbContext(typeof(Contexto))]
-    [Migration("20250929233632_Inicial")]
+    [Migration("20251006013827_Inicial")]
     partial class Inicial
     {
         /// <inheritdoc />
@@ -29,11 +29,11 @@ namespace P1_AP1_WilliamRodriguez.Migrations
                     b.Property<int>("Cantidad")
                         .HasColumnType("INTEGER");
 
-                    b.Property<DateTime?>("FechaFin")
+                    b.Property<DateTime>("Fecha")
                         .HasColumnType("TEXT");
 
-                    b.Property<DateTime>("FechaInicio")
-                        .HasColumnType("TEXT");
+                    b.Property<double>("Importe")
+                        .HasColumnType("REAL");
 
                     b.Property<string>("NombreCliente")
                         .IsRequired()

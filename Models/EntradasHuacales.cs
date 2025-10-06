@@ -7,7 +7,6 @@ public class EntradasHuacales
     [Key]
     public int EntradaId {  get; set; }
 
-    [RegularExpression(@"^[A-Za-z]+$", ErrorMessage = "Solo se permiten letras")]
     [Required(ErrorMessage = "El nombre del cliente es obligatorio")]
     public string NombreCliente { get; set; } = string.Empty;
 
@@ -17,7 +16,8 @@ public class EntradasHuacales
     [Range(1, int.MaxValue, ErrorMessage = "El precio debe ser mayor o igual a 1")]
     public int Precio { get; set; }
 
-    public DateTime FechaInicio{ get; set; } = DateTime.UtcNow;
-    public DateTime? FechaFin { get; set; }
+    public double Importe => Cantidad * Precio;
+
+    public DateTime Fecha{ get; set; } = DateTime.UtcNow;
 
 }

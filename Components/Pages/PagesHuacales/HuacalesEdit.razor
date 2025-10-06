@@ -2,6 +2,7 @@
 @inject HuacalesServices huacalesServices
 @inject NavigationManager Navigation
 @rendermode InteractiveServer
+@inject IJSRuntime JSRuntime
 
 <PageTitle>Edicion de huacales</PageTitle>
 
@@ -16,6 +17,14 @@
             </div>
 
             <div class="card-body">
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label"><strong>Fecha</strong></label>
+                        <input class="form-control" value="@huacales.Fecha.ToLocalTime().ToString("yyyy-MM-dd HH:mm")" readonly />
+                    </div>
+                </div>
+
                 <div class="mb-3">
                     <label class="form-label"><strong>EntradaId</strong></label>
                     <InputNumber class="form-control" @bind-Value="huacales.EntradaId" disabled />
@@ -37,20 +46,6 @@
                     <label class="form-label"><strong>Precio</strong></label>
                     <InputNumber class="form-control" @bind-Value="huacales.Precio" />
                     <ValidationMessage For="() => huacales.Precio" />
-                </div>
-
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label"><strong>Fecha de salida</strong></label>
-                        <input class="form-control" value="@huacales.FechaInicio.ToLocalTime().ToString("yyyy-MM-dd HH:mm")" readonly />
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label"><strong>Fecha de entrega</strong></label>
-                        <input class="form-control" value="@(huacales.FechaFin.HasValue? huacales.FechaFin.Value.ToLocalTime().ToString("yyyy-MM-dd HH:mm") : "-")" readonly />
-                        <button type="button" class="btn btn-outline-success mt-2" @onclick="MarcarFinalizadaAhora">
-                            <span class="bi bi-flag"></span> Marcar Finalizada ahora
-                        </button>
-                    </div>
                 </div>
             </div>
 
@@ -76,24 +71,42 @@
 
     protected override async Task OnParametersSetAsync()
     {
-        huacales = await huacalesServices.Buscar(EntradaId) ?? new EntradasHuacales { EntradaId = EntradaId, FechaInicio = DateTime.UtcNow };
+        huacales = await huacalesServices.Buscar(EntradaId) ?? new EntradasHuacales { EntradaId = EntradaId, Fecha = DateTime.UtcNow };
+       
     }
 
     private async Task Modificar()
     {
-        var existe = (await huacalesServices.Listar(h =>
-            h.NombreCliente == huacales.NombreCliente && h.EntradaId != huacales.EntradaId)).Any();
-        if (existe) return;
+        var existe = (await huacalesServices.Listar(h => h.NombreCliente == huacales.NombreCliente && h.EntradaId != huacales.EntradaId)).Any();
+
+        if (existe) 
+        {
+            await JSRuntime.InvokeVoidAsync("alert", "Ya existe este Cliente.");
+            return;
+        }
         var ok = await huacalesServices.Guardar(huacales);
-        if (ok) Navigation.NavigateTo("/");
+        if (ok)
+        {
+            Navigation.NavigateTo("/");
+        }
+        else
+        {
+            await JSRuntime.InvokeVoidAsync("alert", "No se pudo guardar.");
+        }
     }
 
     private async Task Eliminar()
     {
+        var confirmado = await JSRuntime.InvokeAsync<bool>("confirm", "Esta seguro que desea eliminar este cliente?, esta accion no se puede deshacer.");
+        if (!confirmado) return;
+
         if (huacales is null || huacales.EntradaId <= 0) return;
         var ok = await huacalesServices.Eliminar(huacales.EntradaId);
-        if (ok) Navigation.NavigateTo("/");
+        if (ok)
+        {
+            await JSRuntime.InvokeVoidAsync("alert", "Cliente Eliminado");
+            Navigation.NavigateTo("/");
+        }
     }
-    private void MarcarFinalizadaAhora() => huacales.FechaFin = DateTime.UtcNow;
 }
 

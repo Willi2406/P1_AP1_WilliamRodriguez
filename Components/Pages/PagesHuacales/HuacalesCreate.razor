@@ -16,6 +16,14 @@
             </div>
 
             <div class="card-body">
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label"><strong>Fecha</strong></label>
+                        <input class="form-control" value="@huacales.Fecha.ToLocalTime().ToString("yyyy-MM-dd HH:mm")" readonly />
+                    </div>
+                </div>
+
                 <div class="mb-3">
                     <label class="form-label"><strong>Nombre del Cliente</strong></label>
                     <InputText class="form-control" @bind-Value="huacales.NombreCliente" />
@@ -32,17 +40,6 @@
                     <label class="form-label"><strong>Precio</strong></label>
                     <InputNumber class="form-control" @bind-Value="huacales.Precio" />
                     <ValidationMessage For="() => huacales.Precio" />
-                </div>
-
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label"><strong>Fecha de salida</strong></label>
-                        <input class="form-control" value="@huacales.FechaInicio.ToLocalTime().ToString("yyyy-MM-dd HH:mm")" readonly />
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label"><strong>Fecha de entrega</strong></label>
-                        <input class="form-control" value="-" readonly />
-                    </div>
                 </div>
             </div>
 
