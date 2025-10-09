@@ -201,11 +201,12 @@
         if (ok)
         {
             toastService.ShowSuccess("Se ha guardado con exito!!");
+             await Task.Delay(2000);
             Navigation.NavigateTo("/Huacales/Index");
         }
         else
         {
-            toastService.ShowError("No se pudo guardar la entrada correctamente.");
+            toastService.ShowWarning("No se pudo guardar la entrada correctamente.");
         }
     }
 }

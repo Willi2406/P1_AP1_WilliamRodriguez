@@ -24,7 +24,7 @@
                 <div class="row">
                     <div class="col-md-3 mb-3">
                         <label class="form-label"><strong>ID</strong></label>
-                        <InputNumber class="form-control" @bind-Value="huacales.EntradaId" readonly/>
+                        <InputNumber class="form-control" @bind-Value="huacales.EntradaId" readonly />
                     </div>
                     <div class="col-md-3 mb-3">
                         <label class="form-label"><strong>Fecha</strong></label>
@@ -50,7 +50,7 @@
                                 <option value="0" selected disabled>Seleccione un tipo</option>
                                 @foreach (var tipo in TiposDisponibles)
                                 {
-                                    <option value="@tipo.TipoId">@tipo.Descripcion - @tipo.Existencia</option>
+                                    <option value="@tipo.TipoId">@tipo.Descripcion - Existencia: @tipo.Existencia</option>
                                 }
                             </InputSelect>
                         </div>
@@ -73,7 +73,7 @@
                     </div>
 
                     <table class="table table-bordered table-striped">
-                        <thead> 
+                        <thead>
                             <tr>
                                 <th>Tipo</th>
                                 <th>Cantidad</th>
@@ -91,8 +91,12 @@
                                         <td>@detalle.Cantidad</td>
                                         <td>@detalle.Precio.ToString("C")</td>
                                         <td class="text-center">
-                                            <button type="button" class="bi bi-arrow-counterclockwise me-1" @onclick="() => RemoverDetalle(detalle)">
-                                                Restablcer
+                                            <button 
+                                                type="button" class="bi bi-arrow-counterclockwise me-1"@onclick="() => CargarDetalleParaEdicion(detalle)"> Restablecer
+                                            </button>
+    
+                                            <button 
+                                                type="button" class="btn btn-sm btn-danger bi bi-trash"@onclick="() => RemoverDetalle(detalle)"> Eliminar
                                             </button>
                                         </td>
                                     </tr>
@@ -106,7 +110,7 @@
                             }
                         </tbody>
                     </table>
-                    
+
                     <div class="row pt-2 justify-content-end">
                         <div class="col-auto">
                             <div class="text-end">
@@ -127,12 +131,12 @@
                 <a href="/Huacales/Index" class="btn btn-secondary">
                     <span class="bi bi-arrow-left me-1"></span> Volver
                 </a>
-                
+
                 <button type="submit" class="btn btn-primary">
                     <span class="bi bi-floppy me-1"></span> Guardar
                 </button>
 
-                <button type="button" class="btn btn-danger" @onclick="EliminarRegistro"> 
+                <button type="button" class="btn btn-danger" @onclick="EliminarRegistro">
                     <span class="bi bi-trash me-1"></span> Eliminar
                 </button>
 
@@ -149,17 +153,17 @@
     public List<TipoHuacales> TiposDisponibles { get; set; } = new List<TipoHuacales>();
     public DetalleHuacales DetalleTemporal { get; set; } = new DetalleHuacales();
     public int TipoIdSeleccionado { get; set; }
+    public DetalleHuacales? DetalleOriginalEnEdicion { get; set; } 
+    public bool ok { get; set; } = false;
 
-   
+
     public decimal MontoTotal => huacales.DetalleHuacales.Sum(d => d.Cantidad * d.Precio);
     public int CantidadTotalDetalle => huacales.DetalleHuacales.Sum(d => d.Cantidad);
 
     protected override async Task OnInitializedAsync()
     {
-       
         TiposDisponibles = await huacalesServices.GetTipoHuacales();
 
-       
         if (EntradaId > 0)
         {
             var encontrada = await huacalesServices.Buscar(EntradaId);
@@ -170,9 +174,21 @@
             else
             {
                 toastService.ShowError($"Entrada con ID {EntradaId} no encontrada.");
+                await Task.Delay(2000);
                 Navigation.NavigateTo("/Huacales/Index");
             }
         }
+    }
+
+    public void CargarDetalleParaEdicion(DetalleHuacales detalle)
+    {
+        DetalleOriginalEnEdicion = detalle;
+
+        TipoIdSeleccionado = detalle.TipoId;
+        DetalleTemporal.Cantidad = detalle.Cantidad;
+        DetalleTemporal.Precio = detalle.Precio;
+
+        toastService.ShowSuccess("Detalle cargado. Modifique los campos y presione 'Agregar' para guardar los cambios.");
     }
 
     public void AgregarDetalle()
@@ -196,13 +212,19 @@
         var TipoSeleccionado = TiposDisponibles.FirstOrDefault(t => t.TipoId == TipoIdSeleccionado);
         if (TipoSeleccionado == null) return;
 
+        if (DetalleOriginalEnEdicion != null)
+        {
+            huacales.DetalleHuacales.Remove(DetalleOriginalEnEdicion);
+            DetalleOriginalEnEdicion = null;
+        }
+
         var nuevoDetalle = new DetalleHuacales
         {
             TipoId = TipoIdSeleccionado,
             Cantidad = DetalleTemporal.Cantidad,
             Precio = DetalleTemporal.Precio,
             DescripcionTipoHuacal = TipoSeleccionado.Descripcion,
-            EntradaId = huacales.EntradaId 
+            EntradaId = huacales.EntradaId
         };
 
         huacales.DetalleHuacales.Add(nuevoDetalle);
@@ -214,6 +236,7 @@
     public void RemoverDetalle(DetalleHuacales detalle)
     {
         huacales.DetalleHuacales.Remove(detalle);
+        toastService.ShowError("Detalle eliminado de la lista. Presione 'Guardar' para aplicar el cambio.");
     }
 
     private async Task Modificar()
@@ -227,10 +250,11 @@
             return;
         }
 
-        var ok = await huacalesServices.Guardar(huacales); 
+        ok = await huacalesServices.Modificar(huacales);
         if (ok)
         {
             toastService.ShowSuccess("Se ha modificado con exito!!");
+            await Task.Delay(2000);
             Navigation.NavigateTo("/Huacales/Index");
         }
         else
@@ -238,21 +262,21 @@
             toastService.ShowError("No se pudo modificar el id correctamente.");
         }
     }
-    
+
     private async Task EliminarRegistro()
     {
         if (EntradaId <= 0) return;
 
-  
-        var mensaje = $"¿Esta seguro que desea eliminar el id #{EntradaId}? Esta accion no se puede deshacer.";
+        var mensaje = $"¿Está seguro que desea eliminar la entrada #{EntradaId}? Esta acción no se puede deshacer.";
         var confirmado = await JSRuntime.InvokeAsync<bool>("confirm", mensaje);
-        
+
         if (!confirmado) return;
-        
-        var eliminado = await huacalesServices.Eliminar(EntradaId);
-        if (eliminado)
+
+        ok = await huacalesServices.Eliminar(EntradaId);
+        if (ok)
         {
-            toastService.ShowSuccess($"id#{EntradaId} eliminada con exito.");
+            toastService.ShowSuccess($"Entrada #{EntradaId} eliminada con éxito.");
+            await Task.Delay(2000);
             Navigation.NavigateTo("/Huacales/Index");
         }
         else
