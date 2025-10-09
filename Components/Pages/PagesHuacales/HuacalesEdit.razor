@@ -163,21 +163,6 @@
     protected override async Task OnInitializedAsync()
     {
         TiposDisponibles = await huacalesServices.GetTipoHuacales();
-
-        if (EntradaId > 0)
-        {
-            var encontrada = await huacalesServices.Buscar(EntradaId);
-            if (encontrada != null)
-            {
-                huacales = encontrada;
-            }
-            else
-            {
-                toastService.ShowError($"Entrada con ID {EntradaId} no encontrada.");
-                await Task.Delay(2000);
-                Navigation.NavigateTo("/Huacales/Index");
-            }
-        }
     }
 
     public void CargarDetalleParaEdicion(DetalleHuacales detalle)
@@ -236,7 +221,7 @@
     public void RemoverDetalle(DetalleHuacales detalle)
     {
         huacales.DetalleHuacales.Remove(detalle);
-        toastService.ShowError("Detalle eliminado de la lista. Presione 'Guardar' para aplicar el cambio.");
+        toastService.ShowSuccess("Detalle eliminado de la lista. Presione 'Guardar' para aplicar el cambio.");
     }
 
     private async Task Modificar()
@@ -267,7 +252,7 @@
     {
         if (EntradaId <= 0) return;
 
-        var mensaje = $"¿Está seguro que desea eliminar la entrada #{EntradaId}? Esta acción no se puede deshacer.";
+        var mensaje = $"¿Esta seguro que desea eliminar la entrada #{EntradaId}? Esta accion no se puede deshacer.";
         var confirmado = await JSRuntime.InvokeAsync<bool>("confirm", mensaje);
 
         if (!confirmado) return;
@@ -275,7 +260,7 @@
         ok = await huacalesServices.Eliminar(EntradaId);
         if (ok)
         {
-            toastService.ShowSuccess($"Entrada #{EntradaId} eliminada con éxito.");
+            toastService.ShowSuccess($"Entrada #{EntradaId} eliminada con exito.");
             await Task.Delay(2000);
             Navigation.NavigateTo("/Huacales/Index");
         }

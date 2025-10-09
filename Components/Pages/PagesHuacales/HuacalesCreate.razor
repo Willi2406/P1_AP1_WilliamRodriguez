@@ -83,8 +83,12 @@
                                         <td>@detalle.Cantidad</td>
                                         <td>@detalle.Precio.ToString("C")</td>
                                         <td class="text-center">
-                                            <button type="button" class="bi bi-arrow-counterclockwise me-1" @onclick="() => RemoverDetalle(detalle)">
-                                                Restablecer
+                                             <button 
+                                                type="button" class="bi bi-arrow-counterclockwise me-1"@onclick="() => CargarDetalleParaEdicion(detalle)"> Restablecer
+                                            </button>
+    
+                                            <button 
+                                                type="button" class="btn btn-sm btn-danger bi bi-trash"@onclick="() => RemoverDetalle(detalle)"> Eliminar
                                             </button>
                                         </td>
                                     </tr>
@@ -136,6 +140,7 @@
     public List<TipoHuacales> TiposDisponibles { get; set; } = new List<TipoHuacales>();
     public DetalleHuacales DetalleTemporal { get; set; } = new DetalleHuacales();
     public int TipoIdSeleccionado { get; set; }
+    public DetalleHuacales? DetalleOriginalEnEdicion { get; set; }
 
     public decimal MontoTotal => huacales.DetalleHuacales.Sum(d => d.Cantidad * d.Precio);
     public int CantidadTotalDetalle => huacales.DetalleHuacales.Sum(d => d.Cantidad);
@@ -144,6 +149,17 @@
     {
         TiposDisponibles = await huacalesServices.GetTipoHuacales();
         huacales.Fecha = DateTime.Now;
+    }
+
+    public void CargarDetalleParaEdicion(DetalleHuacales detalle)
+    {
+        DetalleOriginalEnEdicion = detalle;
+
+        TipoIdSeleccionado = detalle.TipoId;
+        DetalleTemporal.Cantidad = detalle.Cantidad;
+        DetalleTemporal.Precio = detalle.Precio;
+
+        toastService.ShowSuccess("Detalle cargado. Modifique los campos y presione 'Agregar' para guardar los cambios.");
     }
 
     public void AgregarDetalle()
@@ -167,12 +183,19 @@
         var TipoSeleccionado = TiposDisponibles.FirstOrDefault(t => t.TipoId == TipoIdSeleccionado);
         if (TipoSeleccionado == null) return;
 
+        if (DetalleOriginalEnEdicion != null)
+        {
+            huacales.DetalleHuacales.Remove(DetalleOriginalEnEdicion);
+            DetalleOriginalEnEdicion = null;
+        }
+
         var nuevoDetalle = new DetalleHuacales
         {
             TipoId = TipoIdSeleccionado,
             Cantidad = DetalleTemporal.Cantidad,
             Precio = DetalleTemporal.Precio,
-            DescripcionTipoHuacal = TipoSeleccionado.Descripcion
+            DescripcionTipoHuacal = TipoSeleccionado.Descripcion,
+            EntradaId = huacales.EntradaId
         };
 
         huacales.DetalleHuacales.Add(nuevoDetalle);
@@ -184,6 +207,7 @@
     public void RemoverDetalle(DetalleHuacales detalle)
     {
         huacales.DetalleHuacales.Remove(detalle);
+        toastService.ShowSuccess("Detalle eliminado de la lista. Presione 'Guardar' para aplicar el cambio.");
     }
 
     private async Task Guardar()
