@@ -7,6 +7,22 @@ namespace P1_AP1_WilliamRodriguez.Services;
 
 public class HuacalesServices (IDbContextFactory<Contexto> DbFactory)
 {
+    private async Task AfectarExistencia(ICollection<DetalleHuacales> detalle, TipoOperacion tipoOperacion)
+    {
+        await using var contexto = await DbFactory.CreateDbContextAsync();
+        foreach (var item in detalle)
+        {
+            var tipoHuacal = await contexto.TipoHuacales
+                .SingleAsync(t => t.TipoId == item.TipoId);
+
+            var cantidadEntrada = item.Cantidad;
+
+            if (tipoOperacion == TipoOperacion.Suma)
+                tipoHuacal.Existencia += cantidadEntrada; 
+            else
+                tipoHuacal.Existencia -= cantidadEntrada;
+        }
+    }
     public async Task<bool> Existe (int id)
     {
         await using var contexto = await DbFactory.CreateDbContextAsync();
@@ -17,30 +33,55 @@ public class HuacalesServices (IDbContextFactory<Contexto> DbFactory)
     {
         await using var contexto = await DbFactory.CreateDbContextAsync();
         contexto.Add(huacales);
+        await AfectarExistencia(huacales.DetalleHuacales, TipoOperacion.Resta);
         return await contexto.SaveChangesAsync() > 0;
     }
 
     public async Task<bool> Modificar(EntradasHuacales huacales)
     {
         await using var contexto = await DbFactory.CreateDbContextAsync();
+        var original = await contexto.Huacales
+            .Include(e => e.DetalleHuacales)
+            .AsNoTracking()
+            .SingleOrDefaultAsync(e => e.EntradaId == huacales.EntradaId);
+
+        if (original == null) return false;
+
+        await AfectarExistencia(original.DetalleHuacales, TipoOperacion.Suma);
+
+        contexto.DetalleHuacales.RemoveRange(original.DetalleHuacales);
+
         contexto.Update(huacales);
+
+        await AfectarExistencia(huacales.DetalleHuacales, TipoOperacion.Resta);
+
         return await contexto.SaveChangesAsync() > 0;
     }
 
     public async Task<bool> Eliminar(int EntradaId)
     {
         await using var contexto = await DbFactory.CreateDbContextAsync();
-        var entidad = await contexto.Huacales.FindAsync(EntradaId);
+
+        var entidad = await contexto.Huacales
+            .Include(e => e.DetalleHuacales)
+            .FirstOrDefaultAsync(e => e.EntradaId == EntradaId);
+
         if (entidad is null) return false;
 
-        contexto.Huacales.Remove(entidad); 
+        await AfectarExistencia(entidad.DetalleHuacales, TipoOperacion.Suma);
+
+        contexto.DetalleHuacales.RemoveRange(entidad.DetalleHuacales);
+        contexto.Huacales.Remove(entidad);
         return await contexto.SaveChangesAsync() > 0;
     }
 
-    public async Task<EntradasHuacales> Buscar(int aportesId)
+    public async Task<EntradasHuacales> Buscar(int entradaId)
     {
         await using var contexto = await DbFactory.CreateDbContextAsync();
-        return await contexto.Huacales.FindAsync(aportesId);
+        return await contexto.Huacales
+            .Include(e => e.DetalleHuacales)
+            .AsNoTracking()
+            .FirstOrDefaultAsync(e => e.EntradaId == entradaId);
     }
     public async Task<bool> Guardar(EntradasHuacales huacales)
     {
@@ -58,9 +99,23 @@ public class HuacalesServices (IDbContextFactory<Contexto> DbFactory)
     {
         using var ctx = await DbFactory.CreateDbContextAsync();
         return await ctx.Huacales
+                        .Include(e => e.DetalleHuacales)
                         .Where(criterio)
                         .AsNoTracking()
                         .ToListAsync();
+    }
+
+    public async Task<List<TipoHuacales>> GetTipoHuacales()
+    {
+        using var ctx = await DbFactory.CreateDbContextAsync();
+        return await ctx.TipoHuacales
+            .AsNoTracking()
+            .ToListAsync();
+    }
+    public enum TipoOperacion 
+    {
+        Suma = 1,
+        Resta = 2
     }
 
 }

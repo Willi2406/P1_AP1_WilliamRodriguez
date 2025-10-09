@@ -1,9 +1,12 @@
 ﻿@page "/Huacales/Create"
 @inject HuacalesServices huacalesServices
 @inject NavigationManager Navigation
+@inject ToastService toastService
 @rendermode InteractiveServer
 
-<PageTitle>Creacion de huacales</PageTitle>
+<PageTitle>Creación de Huacales</PageTitle>
+
+<Toasts class="p-3" AutoHide="true" Delay="6000" Placement="ToastsPlacement.TopRight" />
 
 <EditForm Model="huacales" OnValidSubmit="Guardar">
     <DataAnnotationsValidator />
@@ -12,16 +15,14 @@
     <div class="container">
         <div class="card shadow-lg">
             <div class="card-header">
-                <h5 class="card-title m-0">Registrar Huacales</h5>
+                <h5 class="card-title m-0">Registrar Entrada de Huacales</h5>
             </div>
 
             <div class="card-body">
 
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label"><strong>Fecha</strong></label>
-                        <input class="form-control" value="@huacales.Fecha.ToLocalTime().ToString("yyyy-MM-dd")" readonly />
-                    </div>
+                <div class="col-md-3 mb-3">
+                    <label class="form-label"><strong>Fecha</strong></label>
+                    <InputDate class="form-control" @bind-Value="huacales.Fecha" />
                 </div>
 
                 <div class="mb-3">
@@ -30,40 +31,181 @@
                     <ValidationMessage For="() => huacales.NombreCliente" />
                 </div>
 
-                <div class="mb-3">
-                    <label class="form-label"><strong>Cantidad</strong></label>
-                    <InputNumber class="form-control" @bind-Value="huacales.Cantidad" />
-                    <ValidationMessage For="() => huacales.Cantidad" />
+                <div class="border border-success p-3 mt-3">
+                    <h5>Tipos de Huacales a Ingresar</h5>
+
+                    <div class="row g-3 mb-3 align-items-end">
+
+                        <div class="col-md-4">
+                            <label class="form-label"><strong>Tipo de Huacal</strong></label>
+                            <InputSelect class="form-select" @bind-Value="TipoIdSeleccionado">
+                                <option value="0" selected disabled>Seleccione un tipo</option>
+                                @foreach (var tipo in TiposDisponibles)
+                                {
+                                    <option value="@tipo.TipoId">@tipo.Descripcion</option>
+                                }
+                            </InputSelect>
+                        </div>
+
+                        <div class="col-md-2">
+                            <label class="form-label"><strong>Cantidad</strong></label>
+                            <InputNumber class="form-control" @bind-Value="DetalleTemporal.Cantidad" />
+                        </div>
+
+                        <div class="col-md-2">
+                            <label class="form-label"><strong>Precio Unitario</strong></label>
+                            <InputNumber class="form-control" @bind-Value="DetalleTemporal.Precio" />
+                        </div>
+
+                        <div class="col-md-2">
+                            <button type="button" class="btn btn-success w-100" @onclick="AgregarDetalle">
+                                <span class="bi bi-plus-circle me-1"></span> Agregar
+                            </button>
+                        </div>
+                    </div>
+
+                    <table class="table table-bordered table-striped">
+                        <thead 
+                            <tr>
+                                <th>Tipo</th>
+                                <th>Cantidad</th>
+                                <th>Precio Unit.</th>
+                                <th>Opciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (huacales.DetalleHuacales.Any())
+                            {
+                                @foreach (var detalle in huacales.DetalleHuacales)
+                                {
+                                    <tr>
+                                        <td>@(TiposDisponibles.FirstOrDefault(t => t.TipoId == detalle.TipoId)?.Descripcion)</td>
+                                        <td>@detalle.Cantidad</td>
+                                        <td>@detalle.Precio.ToString("C")</td>
+                                        <td class="text-center">
+                                            <button type="button" class="bi bi-arrow-counterclockwise me-1" @onclick="() => RemoverDetalle(detalle)">
+                                                Restablecer
+                                            </button>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="4" class="text-center text-muted">Aún no se han agregado tipos de huacales a esta entrada.</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                    <div class="row pt-2 justify-content-end">
+                        <div class="col-auto">
+                            <div class="text-end">
+                                <h6 class="mb-1">
+                                    <span><strong>Total de Huacales:</strong> @CantidadTotalDetalle</span>
+                                </h6>
+                                <h6 class="mb-0">
+                                    <span><strong>Monto total a pagar:</strong> @MontoTotal.ToString("C")</span>
+                                </h6>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="mb-3">
-                    <label class="form-label"><strong>Precio</strong></label>
-                    <InputNumber class="form-control" @bind-Value="huacales.Precio" />
-                    <ValidationMessage For="() => huacales.Precio" />
-                </div>
             </div>
 
             <div class="card-footer d-flex gap-2">
-                <a href="/" class="btn btn-secondary">
+                <a href="/Huacales/Index" class="btn btn-secondary">
                     <span class="bi bi-arrow-left me-1"></span> Volver
                 </a>
-                <button type="submit" class="btn btn-primary">
-                    <span class="bi bi-floppy me-1"></span> Guardar
-                </button>
+                @if (!ok)
+                {
+                    <button type="submit" class="btn btn-primary">
+                        <span class="bi bi-floppy me-1"></span> Guardar
+                    </button>
+                }
             </div>
         </div>
     </div>
 </EditForm>
 
 @code {
-    public EntradasHuacales huacales { get; set; } = new();
+    public EntradasHuacales huacales { get; set; } = new EntradasHuacales() { DetalleHuacales = new List<DetalleHuacales>() };
+
+    public bool ok { get; set; } = false;
+    public List<TipoHuacales> TiposDisponibles { get; set; } = new List<TipoHuacales>();
+    public DetalleHuacales DetalleTemporal { get; set; } = new DetalleHuacales();
+    public int TipoIdSeleccionado { get; set; }
+
+    public decimal MontoTotal => huacales.DetalleHuacales.Sum(d => d.Cantidad * d.Precio);
+    public int CantidadTotalDetalle => huacales.DetalleHuacales.Sum(d => d.Cantidad);
+
+    protected override async Task OnInitializedAsync()
+    {
+        TiposDisponibles = await huacalesServices.GetTipoHuacales();
+        huacales.Fecha = DateTime.Now;
+    }
+
+    public void AgregarDetalle()
+    {
+        if (TipoIdSeleccionado <= 0)
+        {
+            toastService.ShowWarning("Debe seleccionar un Tipo de Huacal.");
+            return;
+        }
+        if (DetalleTemporal.Cantidad <= 0)
+        {
+            toastService.ShowWarning("La cantidad debe ser mayor a cero.");
+            return;
+        }
+        if (DetalleTemporal.Precio <= 0)
+        {
+            toastService.ShowWarning("Debe ingresar un precio unitario mayor a cero.");
+            return;
+        }
+
+        var TipoSeleccionado = TiposDisponibles.FirstOrDefault(t => t.TipoId == TipoIdSeleccionado);
+        if (TipoSeleccionado == null) return;
+
+        var nuevoDetalle = new DetalleHuacales
+        {
+            TipoId = TipoIdSeleccionado,
+            Cantidad = DetalleTemporal.Cantidad,
+            Precio = DetalleTemporal.Precio,
+            DescripcionTipoHuacal = TipoSeleccionado.Descripcion
+        };
+
+        huacales.DetalleHuacales.Add(nuevoDetalle);
+
+        TipoIdSeleccionado = 0;
+        DetalleTemporal = new DetalleHuacales();
+    }
+
+    public void RemoverDetalle(DetalleHuacales detalle)
+    {
+        huacales.DetalleHuacales.Remove(detalle);
+    }
 
     private async Task Guardar()
     {
-        var existe = (await huacalesServices.Listar(h => h.NombreCliente == huacales.NombreCliente)).Any();
-        if (existe) return;
+        huacales.Cantidad = CantidadTotalDetalle;
+        huacales.Precio = MontoTotal;
 
-        var ok = await huacalesServices.Guardar(huacales);
-        if (ok) Navigation.NavigateTo("/Huacales/Index");
+        if (!huacales.DetalleHuacales.Any())
+        {
+            toastService.ShowWarning("Debe agregar al menos un Tipo de Huacal.");
+            return;
+        }
+
+        ok = await huacalesServices.Guardar(huacales);
+        if (ok)
+        {
+            toastService.ShowSuccess("Se ha guardado con éxito!!");
+            Navigation.NavigateTo("/Huacales/Index");
+        }
+        else
+        {
+            toastService.ShowError("No se pudo guardar la entrada correctamente.");
+        }
     }
 }

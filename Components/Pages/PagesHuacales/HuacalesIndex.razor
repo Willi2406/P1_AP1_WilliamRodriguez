@@ -53,8 +53,7 @@
 								<th>Fecha</th>
 								<th>ID</th>
 								<th>Clientes</th>
-								<th>Cantidad</th>
-								<th>Precio</th>
+								<th>Cantidad de Huacales</th>
 								<th>Importe</th>
 								<th>Opciones</th>
 							</tr>
@@ -67,8 +66,7 @@
 								<th>@h.EntradaId</th>
 								<th>@h.NombreCliente</th>
 								<th>@h.Cantidad</th>
-								<th>@h.Precio</th>
-								<th>@(h.Cantidad * h.Precio)</th>
+								<th>@h.Precio.ToString("C")</th>
 								<th>
 									<a href="/Huacales/Edit/ @h.EntradaId" class="btn btn-outline-primary bi bi-pencil-square" title="Edictar"></a>
 								</th>
@@ -80,8 +78,8 @@
 			</div>
 		</div>
 		<div class="card-footer space-between text-end">
-			<span><strong>Cantidad Total:</strong> @ListaDeHuacales.Sum(x => x.Cantidad).ToString("N2")</span>
-			<span><strong>Total monto:</strong> @ListaDeHuacales.Sum(x => (x.Cantidad * x.Precio)).ToString("N2")</span>
+			<span><strong>Cantidad Total:</strong> @ListaDeHuacales.Sum(x => x.Cantidad)</span>
+			<span><strong>Total monto:</strong> @ListaDeHuacales.Sum(x => (x.Cantidad * x.Precio)).ToString("C")</span>
 		</div>
 	</div>
 </div>
