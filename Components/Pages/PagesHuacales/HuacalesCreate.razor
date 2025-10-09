@@ -42,7 +42,7 @@
                                 <option value="0" selected disabled>Seleccione un tipo</option>
                                 @foreach (var tipo in TiposDisponibles)
                                 {
-                                    <option value="@tipo.TipoId">@tipo.Descripcion</option>
+                                    <option value="@tipo.TipoId">@tipo.Descripcion - @tipo.Existencia</option>
                                 }
                             </InputSelect>
                         </div>
@@ -150,7 +150,7 @@
     {
         if (TipoIdSeleccionado <= 0)
         {
-            toastService.ShowWarning("Debe seleccionar un Tipo de Huacal.");
+            toastService.ShowWarning("Debe seleccionar un tipo de huacal.");
             return;
         }
         if (DetalleTemporal.Cantidad <= 0)
@@ -193,14 +193,14 @@
 
         if (!huacales.DetalleHuacales.Any())
         {
-            toastService.ShowWarning("Debe agregar al menos un Tipo de Huacal.");
+            toastService.ShowWarning("Debe agregar al menos un tipo de huacal.");
             return;
         }
 
         ok = await huacalesServices.Guardar(huacales);
         if (ok)
         {
-            toastService.ShowSuccess("Se ha guardado con éxito!!");
+            toastService.ShowSuccess("Se ha guardado con exito!!");
             Navigation.NavigateTo("/Huacales/Index");
         }
         else

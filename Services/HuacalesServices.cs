@@ -21,6 +21,8 @@ public class HuacalesServices (IDbContextFactory<Contexto> DbFactory)
                 tipoHuacal.Existencia += cantidadEntrada; 
             else
                 tipoHuacal.Existencia -= cantidadEntrada;
+
+            await contexto.SaveChangesAsync();
         }
     }
     public async Task<bool> Existe (int id)
@@ -33,7 +35,7 @@ public class HuacalesServices (IDbContextFactory<Contexto> DbFactory)
     {
         await using var contexto = await DbFactory.CreateDbContextAsync();
         contexto.Add(huacales);
-        await AfectarExistencia(huacales.DetalleHuacales, TipoOperacion.Resta);
+        await AfectarExistencia(huacales.DetalleHuacales, TipoOperacion.Suma);
         return await contexto.SaveChangesAsync() > 0;
     }
 
@@ -47,13 +49,13 @@ public class HuacalesServices (IDbContextFactory<Contexto> DbFactory)
 
         if (original == null) return false;
 
-        await AfectarExistencia(original.DetalleHuacales, TipoOperacion.Suma);
+        await AfectarExistencia(original.DetalleHuacales, TipoOperacion.Resta);
 
         contexto.DetalleHuacales.RemoveRange(original.DetalleHuacales);
 
         contexto.Update(huacales);
 
-        await AfectarExistencia(huacales.DetalleHuacales, TipoOperacion.Resta);
+        await AfectarExistencia(huacales.DetalleHuacales, TipoOperacion.Suma);
 
         return await contexto.SaveChangesAsync() > 0;
     }
@@ -68,7 +70,7 @@ public class HuacalesServices (IDbContextFactory<Contexto> DbFactory)
 
         if (entidad is null) return false;
 
-        await AfectarExistencia(entidad.DetalleHuacales, TipoOperacion.Suma);
+        await AfectarExistencia(entidad.DetalleHuacales, TipoOperacion.Resta);
 
         contexto.DetalleHuacales.RemoveRange(entidad.DetalleHuacales);
         contexto.Huacales.Remove(entidad);
