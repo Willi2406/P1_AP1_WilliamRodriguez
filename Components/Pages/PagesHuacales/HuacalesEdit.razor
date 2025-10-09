@@ -163,6 +163,21 @@
     protected override async Task OnInitializedAsync()
     {
         TiposDisponibles = await huacalesServices.GetTipoHuacales();
+
+        if (EntradaId > 0)
+        {
+            var encontrada = await huacalesServices.Buscar(EntradaId);
+            if (encontrada != null)
+            {
+                huacales = encontrada;
+            }
+            else
+            {
+                toastService.ShowError($"Entrada con ID {EntradaId} no encontrada.");
+                await Task.Delay(2000);
+                Navigation.NavigateTo("/Huacales/Index");
+            }
+        }
     }
 
     public void CargarDetalleParaEdicion(DetalleHuacales detalle)
@@ -221,7 +236,7 @@
     public void RemoverDetalle(DetalleHuacales detalle)
     {
         huacales.DetalleHuacales.Remove(detalle);
-        toastService.ShowSuccess("Detalle eliminado de la lista. Presione 'Guardar' para aplicar el cambio.");
+        toastService.ShowError("Detalle eliminado de la lista. Presione 'Guardar' para aplicar el cambio.");
     }
 
     private async Task Modificar()
