@@ -16,6 +16,8 @@ builder.Services.AddDbContextFactory<Contexto>(o => o.UseSqlite(ConStr));
 
 builder.Services.AddScoped<HuacalesServices>();
 
+builder.Services.AddBlazorBootstrap();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
